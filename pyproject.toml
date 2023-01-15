@@ -1,0 +1,25 @@
+[build-system]
+requires = ["setuptools>=45", "setuptools_scm[toml]>=6.2", "wheel"]
+
+[project]
+name = "datasimulator"
+dependencies = [
+    "numpy",
+]
+dynamic = ["version"]
+
+[project.optional-dependencies]
+dev = [
+  "coverage>=5.0.3",
+  "pytest",
+  "pytest-cov",
+]
+
+[tool.setuptools_scm]
+
+[tool.pytest.ini_options]
+minversion = "6.0"
+addopts = "--cov=datasimulator"
+testpaths = [
+    "tests",
+]
