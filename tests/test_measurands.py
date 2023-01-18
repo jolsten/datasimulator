@@ -1,3 +1,4 @@
+import datetime
 import numpy as np
 import pytest
 import datasimulator as ds
@@ -28,3 +29,12 @@ def test_cycle(value_list, dtype):
     m = ds.Cycle(value_list, dtype=dtype)
     for v in value_list + value_list + value_list:
         assert m.generate(0, 0) == v
+
+
+@pytest.mark.parametrize('epoch, dt, value', [
+    (datetime.datetime(1986,3,4), datetime.datetime(1986,3,5), 86400),
+    (datetime.datetime(1970,1,1), datetime.datetime(2009,2,13,23,31,30), 1234567890),
+])
+def test_clock(epoch, dt, value):
+    m = ds.Clock(epoch=epoch)
+    assert m.generate(0, dt) == value

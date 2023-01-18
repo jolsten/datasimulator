@@ -19,7 +19,7 @@ dev = [
 
 [tool.pytest.ini_options]
 minversion = "6.0"
-addopts = "--cov=datasimulator"
+addopts = "--cov=datasimulator --cov-report html"
 testpaths = [
     "tests",
 ]
