@@ -28,3 +28,19 @@ def test_cycle_frame():
     for i in range(12):
         data = cycle_frame.generate(0, 0)
         assert data[0] == i % 4
+
+
+@pytest.mark.parametrize('pid', [1, 5, 10, 25, 50, 100, 150, 200])
+def test_packet_pid(pid):
+    p = ds.Packet(
+        apid=pid,
+        sources=[ds.Constant(pid) for _ in range(pid+1)],
+    )
+    data = p.generate(0, 0)
+
+    vals, counts = np.unique(data[6:], return_counts=True)
+    index = np.argmax(counts)
+    mode = vals[index]
+
+    assert len(data) == pid+7
+    assert mode == pid

@@ -1,13 +1,13 @@
 import itertools
 import numpy as np
 from dataclasses import dataclass
-from typing import List
+from typing import Iterable
 from .typing import DateTime, DataSource
 
 
 @dataclass
 class Frame:
-    sources: List[DataSource]
+    sources: Iterable[DataSource]
     msbf: bool = True
 
     def generate(self, x: int, t: DateTime) -> np.ndarray:
@@ -20,7 +20,7 @@ class Frame:
 
 @dataclass
 class CycleFrame:
-    frames: List[Frame]
+    frames: Iterable[Frame]
     msbf: bool = True
 
     def __post_init__(self) -> None:
@@ -41,7 +41,7 @@ class CycleFrame:
 @dataclass
 class Packet:
     apid: int
-    sources: List[DataSource]
+    sources: Iterable[DataSource]
 
     def __post_init__(self) -> None:
         if self.apid > 2**11:
@@ -59,3 +59,14 @@ class Packet:
         )
         hdr = self._make_header(self.apid, len(data)-1)
         return np.concatenate([hdr, data])
+
+
+class PacketDataUnit:
+    apids: Iterable[Packet]
+    cycle: Iterable[int]
+
+    def __post_init__(self) -> None:
+        self._iterator = itertools.cycle(self.cycle)
+
+    def generate(self, x: int, t: DateTime) -> np.ndarray:
+        next_apid = next(self._iterator)
