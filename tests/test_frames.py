@@ -48,6 +48,14 @@ def test_packet_pid(pid):
     assert mode == pid
 
 
+def test_packet_pid_too_large():
+    with pytest.raises(ValueError):
+        p = ds.Packet(
+            apid=65536,
+            sources=[ds.Constant(1)]
+        )
+
+
 def test_packet_sequence_number():
     p = ds.Packet(
         apid=85,
