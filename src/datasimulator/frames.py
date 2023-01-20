@@ -61,12 +61,28 @@ class Packet:
         return np.concatenate([hdr, data])
 
 
+@dataclass
 class PacketDataUnit:
-    apids: Iterable[Packet]
+    size: int
+    packets: Iterable[Packet]
     cycle: Iterable[int]
 
     def __post_init__(self) -> None:
         self._iterator = itertools.cycle(self.cycle)
+        self._dict = {p.apid: p for p in self.packets}
+        self._spillover = np.array([], dtype='u1')
 
     def generate(self, x: int, t: DateTime) -> np.ndarray:
-        next_apid = next(self._iterator)
+        fpp = len(self._spillover)
+        current = [
+            np.array([fpp], dtype='u2').byteswap().view('u1'),
+            self._spillover,
+        ]
+        while sum([len(x) for x in current]) < self.size:
+            next_apid = next(self._iterator)
+            next_packet = self._dict[next_apid].generate(x, t)
+            current.append(next_packet)
+
+        data = np.concatenate(current)
+        self._spillover = data[self.size:]
+        return data[0:self.size]
