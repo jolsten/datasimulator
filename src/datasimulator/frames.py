@@ -11,6 +11,7 @@ class Frame:
     msbf: bool = True
 
     def generate(self, x: int, t: DateTime) -> np.ndarray:
+        print('aa', self.sources)
         data = [np.atleast_1d(s.generate(x, t)) for s in self.sources]
         if self.msbf:
             data = [d.byteswap() for d in data]

@@ -1,6 +1,44 @@
 import numpy as np
 import pytest
+from hypothesis import given, assume, strategies as st
+from typing import Optional, Iterable
+
 import datasimulator as ds
+
+def numpy_integers(dtype='u1'):
+    info = np.iinfo(dtype)
+    return st.integers(min_value=info.min, max_value=info.max)
+
+@st.composite
+def ex_constant(draw):
+    dtype = draw(st.sampled_from(['u1', 'u2', 'u4', 'i1', 'i2', 'i4']))
+    value = numpy_integers(dtype)
+    return st.builds(ds.Constant, value=value, dtype=dtype)
+
+@st.composite
+def ex_counter(draw):
+    dtype = draw(st.sampled_from(['u1', 'u2', 'u4']))
+    start = draw(numpy_integers(dtype))
+    step = draw(numpy_integers(dtype))
+    return st.builds(ds.Counter, start=start, step=step, dtype=dtype)
+
+def ex_source(strategies=[ex_constant(), ex_counter()]):
+    return st.one_of(strategies)
+
+def ex_frame(min_size=1, max_size=512):
+    source_list = st.lists(
+        ex_source(),
+        min_size=min_size,
+        max_size=max_size,
+    )
+    return st.builds(ds.Frame, sources=source_list)
+
+@given(ex_frame())
+def test_frame(frame: ds.Frame):
+    print(frame)
+    data = frame.generate(0, 0)
+    assert False
+
 
 @pytest.mark.parametrize('length', (4, 16, 32, 64, 128, 256, 512, 1024))
 def test_frame_constant(length):
@@ -77,15 +115,15 @@ def test_packet_length(pdl):
     assert len(data) == pdl + 6
 
 
-def test_packet_data_unit():
-    pdu = ds.PacketDataUnit(
-        size=50,
-        packets=[
-            ds.Packet(5, sources=[ds.Constant(5) for _ in range(15)]),
-        ],
-        cycle=[5],
-    )
+# def test_packet_data_unit():
+#     pdu = ds.PacketDataUnit(
+#         size=50,
+#         packets=[
+#             ds.Packet(5, sources=[ds.Constant(5) for _ in range(15)]),
+#         ],
+#         cycle=[5],
+#     )
 
-    data = pdu.generate(0, 0)
-    print(data, data.shape)
-    assert False
+#     data = pdu.generate(0, 0)
+#     print(data, data.shape)
+#     assert False

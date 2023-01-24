@@ -10,7 +10,7 @@ dynamic = ["version"]
 
 [project.optional-dependencies]
 dev = [
-  "coverage>=5.0.3",
+  "hypothesis",
   "pytest",
   "pytest-cov",
 ]
